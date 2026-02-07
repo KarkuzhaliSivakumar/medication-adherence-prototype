@@ -60,7 +60,8 @@ if st.button("✨ Generate My Medication Plan"):
 
     medicines = parse_prescription(prescription_text)
 
-    st.subheader("🔍 What the system understood")
+    # -------- Transparency --------
+    st.subheader("🔍 What the system understood (Structured interpretation for transparency)")
     st.json(medicines)
 
     # -------- Schedule --------
@@ -109,10 +110,16 @@ if st.button("✨ Generate My Medication Plan"):
     with st.expander("🌱 Your motivation for today"):
         st.success(get_daily_motivation())
 
+    # -------- Future Scope (SAFE & OPTIONAL FEATURE) --------
+    st.info(
+        "Future scope: Support low-literacy and non-native speakers through "
+        "multilingual and voice-based explanations using OCR and text-to-speech."
+    )
+
     # -------- Ethical AI Note --------
     st.divider()
     st.caption(
         "Ethical AI Notice: This prototype focuses on explanation, routine, "
         "and behavioral support. It intentionally avoids diagnosis, "
         "dose changes, or outcome predictions."
-    )   
+    )
