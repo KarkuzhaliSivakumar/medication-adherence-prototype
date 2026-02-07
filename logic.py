@@ -1,3 +1,17 @@
+import datetime
+
+def get_daily_motivation():
+    messages = [
+        "Taking your medicine today supports a smoother recovery.",
+        "Consistency today helps your treatment work more effectively.",
+        "Every dose you take is a step toward better health.",
+        "Medicines work best when taken regularly — you’re doing the right thing.",
+        "Today’s doses help prevent future complications."
+    ]
+
+    day_index = datetime.date.today().toordinal() % len(messages)
+    return messages[day_index]
+
 def parse_prescription(text):
     medicines = []
 
