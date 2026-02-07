@@ -57,6 +57,15 @@ if st.button("Generate Adherence Plan"):
             for m in meds:
                 st.write("•", m)
 
+    st.subheader("ℹ️ How we created this plan")
+    st.write(
+        "The schedule is generated based on the dosage frequency provided in the prescription. "
+        "For example, '1-0-1' means morning and night doses. "
+        "Behavioral nudges are added to explain why timing consistency and completion matter, "
+        "especially for antibiotics."
+    )
+
+
     st.subheader("🧠 Why This Schedule Matters")
     nudges = generate_nudges(medicines)
     for n in nudges:
