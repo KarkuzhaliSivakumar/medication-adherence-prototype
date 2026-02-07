@@ -1,94 +1,114 @@
-import datetime
+import random
 
-def get_daily_motivation():
-    messages = [
-        "Taking your medicine today supports a smoother recovery.",
-        "Consistency today helps your treatment work more effectively.",
-        "Every dose you take is a step toward better health.",
-        "Medicines work best when taken regularly — you’re doing the right thing.",
-        "Today’s doses help prevent future complications."
-    ]
-
-    day_index = datetime.date.today().toordinal() % len(messages)
-    return messages[day_index]
-
+# ------------------ PRESCRIPTION PARSER ------------------
 def parse_prescription(text):
+    """
+    Converts raw prescription text into structured information.
+    This is a simple rule-based prototype for hackathon use.
+    """
+
     medicines = []
+    lines = text.strip().split("\n")
 
-    lines = text.split("\n")
     for line in lines:
-        parts = [p.strip() for p in line.split("–")]
-
-        if len(parts) < 4:
-            continue
-
-        name_dose = parts[0].split()
-        name = name_dose[0]
-        dose = name_dose[1] + " " + name_dose[2]
-
-        frequency = parts[1]
-        instruction = parts[2]
-        duration = parts[3]
-
-        timing = []
-        if frequency == "1-0-1":
-            timing = ["Morning", "Night"]
-        elif frequency == "0-1-1":
-            timing = ["Afternoon", "Night"]
-        elif frequency == "1-1-1":
-            timing = ["Morning", "Afternoon", "Night"]
-
-        medicines.append({
-            "name": name,
-            "dose": dose,
-            "frequency": frequency,
-            "timing": timing,
-            "instruction": instruction,
-            "duration": duration
-        })
+        parts = line.split("–")
+        if len(parts) >= 2:
+            medicine = {
+                "name": parts[0].strip(),
+                "dosage_pattern": parts[1].strip(),
+                "instructions": parts[2].strip() if len(parts) > 2 else ""
+            }
+            medicines.append(medicine)
 
     return medicines
 
 
+# ------------------ ADHERENCE PLAN GENERATOR ------------------
 def generate_adherence_plan(medicines):
+    """
+    Creates a daily routine based on dosage patterns like 1-0-1.
+    Focuses on routine, not medical optimization.
+    """
+
     plan = {
-        "Morning": [],
-        "Afternoon": [],
-        "Night": []
+        "🌅 Morning": [],
+        "🌞 Afternoon": [],
+        "🌙 Night": []
     }
 
     for med in medicines:
-        for time in med["timing"]:
-            plan[time].append(
-                f"{med['name']} {med['dose']} ({med['instruction']})"
-            )
+        pattern = med["dosage_pattern"]
+
+        if pattern.startswith("1"):
+            plan["🌅 Morning"].append(med["name"])
+
+        if len(pattern) > 2 and pattern[2] == "1":
+            plan["🌞 Afternoon"].append(med["name"])
+
+        if pattern.endswith("1"):
+            plan["🌙 Night"].append(med["name"])
 
     return plan
 
 
+# ------------------ NUDGE THEORY ENGINE ------------------
 def generate_nudges(medicines):
-    nudges = []
+    """
+    Generates behavioral nudges that explain WHY adherence matters.
+    These are non-clinical, motivational, and ethical.
+    """
 
-    for med in medicines:
-        if med["name"].lower() in ["amoxicillin", "azithromycin"]:
-            nudges.append(
-                "Completing the full antibiotic course helps prevent resistance."
-            )
+    nudges = [
+        "Taking medicine at the same time daily helps build a habit, making doses easier to remember.",
+        "Consistent timing supports a steady routine, which many patients find less stressful.",
+        "Completing the full course is important even if you start feeling better.",
+        "Understanding your medication schedule can reduce confusion and missed doses.",
+        "Small daily habits often lead to better long-term health routines."
+    ]
 
-    nudges.append(
-        "Taking medicines at the same time every day improves recovery."
-    )
-
-    return nudges
+    # Limit nudges to avoid overload (behavioral science principle)
+    return random.sample(nudges, min(2, len(nudges)))
 
 
+# ------------------ BASIC SAFETY AWARENESS ------------------
 def check_basic_contraindications(plan):
+    """
+    Performs simple, non-clinical checks.
+    Avoids medical diagnosis or drug interaction claims.
+    """
+
     warnings = []
 
-    if len(plan["Night"]) > 1:
+    total_doses = sum(len(meds) for meds in plan.values())
+
+    if total_doses >= 5:
         warnings.append(
-            "Multiple medicines are scheduled at night. Take them after food to avoid stomach irritation."
+            "Multiple medicines are scheduled in a single day. "
+            "Using reminders or caregiver support may help maintain routine."
+        )
+
+    if plan["🌙 Night"] and plan["🌅 Morning"]:
+        warnings.append(
+            "Medicines are scheduled at different times of day. "
+            "Maintaining consistent timing helps avoid missed doses."
         )
 
     return warnings
 
+
+# ------------------ DAILY MOTIVATION ------------------
+def get_daily_motivation():
+    """
+    Returns one gentle motivational message per day.
+    Prevents cognitive overload.
+    """
+
+    motivations = [
+        "Today’s small steps support tomorrow’s well-being.",
+        "Understanding your routine is a powerful first step.",
+        "Consistency is more important than perfection.",
+        "Every completed dose is a positive action for yourself.",
+        "Good habits are built one day at a time."
+    ]
+
+    return random.choice(motivations)
