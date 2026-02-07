@@ -10,7 +10,9 @@ from logic import (
 
 st.set_page_config(page_title="Medication Adherence Support", layout="centered")
 
-st.title("💊 Medication Understanding & Adherence Support System")
+st.title("Medication Made Simple")
+st.caption("An AI-based Medication Understanding and Adherence Support System")
+
 st.markdown(
     """
     ### 🧠 Why this app exists
