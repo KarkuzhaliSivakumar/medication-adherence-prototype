@@ -80,7 +80,7 @@ if st.button("Generate Adherence Plan"):
             st.warning(w)
 
     with st.expander("🌱 A Gentle Nudge for Today"):
-         st.toast(get_daily_motivation(), icon="💚")
+        st.success(get_daily_motivation())
 
 
 
