@@ -1,4 +1,13 @@
 import streamlit as st
+from PIL import Image
+
+# Optional OCR import (safe for prototype)
+try:
+    import pytesseract
+    OCR_AVAILABLE = True
+except:
+    OCR_AVAILABLE = False
+
 from logic import (
     parse_prescription,
     generate_adherence_plan,
@@ -7,6 +16,9 @@ from logic import (
     get_daily_motivation
 )
 
+# ─────────────────────────────────────────────
+# PAGE CONFIG
+# ─────────────────────────────────────────────
 st.set_page_config(
     page_title="Medication Adherence Support",
     layout="centered"
@@ -43,21 +55,54 @@ st.divider()
 # ─────────────────────────────────────────────
 with st.container():
     st.subheader("📄 Enter Prescription")
-    prescription_text = st.text_area(
-        "Paste the prescription text below",
-        height=150,
-        value=(
-            "Paracetamol 500 mg – 1-0-1 – After food – 5 days\n"
-            "Amoxicillin 250 mg – 0-1-1 – After food – 7 days"
-        )
+
+    input_mode = st.radio(
+        "Choose input type",
+        ["Text", "Image"],
+        horizontal=True
     )
+
+    prescription_text = ""
+
+    if input_mode == "Text":
+        prescription_text = st.text_area(
+            "Paste the prescription text below",
+            height=150,
+            value=(
+                "Paracetamol 500 mg – 1-0-1 – After food – 5 days\n"
+                "Amoxicillin 250 mg – 0-1-1 – After food – 7 days"
+            )
+        )
+
+    else:
+        uploaded_image = st.file_uploader(
+            "Upload prescription image",
+            type=["png", "jpg", "jpeg"]
+        )
+
+        if uploaded_image:
+            image = Image.open(uploaded_image)
+            st.image(image, caption="Uploaded Prescription", use_column_width=True)
+
+            if OCR_AVAILABLE:
+                with st.spinner("Extracting text from image..."):
+                    extracted_text = pytesseract.image_to_string(image)
+            else:
+                extracted_text = ""
+
+            prescription_text = st.text_area(
+                "Extracted text (you can edit before proceeding)",
+                value=extracted_text,
+                height=150
+            )
 
     generate = st.button("🔍 Generate Medication Plan")
 
 # ─────────────────────────────────────────────
 # OUTPUT SECTION
 # ─────────────────────────────────────────────
-if generate:
+if generate and prescription_text.strip():
+
     medicines = parse_prescription(prescription_text)
 
     with st.container():
@@ -68,7 +113,7 @@ if generate:
 
     st.divider()
 
-    # Schedule + Explanation side by side
+    # Schedule + Explanation
     col1, col2 = st.columns(2)
 
     with col1:
@@ -82,10 +127,9 @@ if generate:
     with col2:
         st.subheader("🧠 Why This Schedule Matters")
         st.info(
-            "Medication timing is derived directly from the prescription pattern "
-            "(e.g., 1-0-1 indicates morning and night doses). "
-            "Consistent timing improves effectiveness and reduces complications, "
-            "especially for antibiotics."
+            "The schedule is created directly from the prescription pattern "
+            "(for example, 1-0-1 means morning and night doses). "
+            "Consistent timing helps medicines work effectively and safely."
         )
 
     st.divider()
@@ -105,13 +149,13 @@ if generate:
             for w in warnings:
                 st.warning(w)
 
-    # Daily motivation
+    # Daily motivation (one per day)
     with st.expander("🌱 A Gentle Nudge for Today"):
         st.success(get_daily_motivation())
 
     st.divider()
 
     st.caption(
-        "Disclaimer: This prototype is for informational support only and "
-        "does not replace professional medical advice."
+        "Disclaimer: This prototype is for informational purposes only "
+        "and does not replace professional medical advice."
     )
