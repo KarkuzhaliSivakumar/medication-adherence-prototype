@@ -1,4 +1,4 @@
-     import streamlit as st
+import streamlit as st
 from logic import get_daily_motivation
 from logic import (
     parse_prescription,
