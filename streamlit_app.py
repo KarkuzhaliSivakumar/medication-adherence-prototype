@@ -1,161 +1,118 @@
-import streamlit as st
-from PIL import Image
-
-# Optional OCR import (safe for prototype)
-try:
-    import pytesseract
-    OCR_AVAILABLE = True
-except:
-    OCR_AVAILABLE = False
-
+     import streamlit as st
+from logic import get_daily_motivation
 from logic import (
     parse_prescription,
     generate_adherence_plan,
     generate_nudges,
-    check_basic_contraindications,
-    get_daily_motivation
+    check_basic_contraindications
 )
 
-# ─────────────────────────────────────────────
-# PAGE CONFIG
-# ─────────────────────────────────────────────
+# ------------------ PAGE CONFIG ------------------
 st.set_page_config(
-    page_title="Medication Adherence Support",
+    page_title="Medication Made Simple",
     layout="centered"
 )
 
-# ─────────────────────────────────────────────
-# HEADER
-# ─────────────────────────────────────────────
-st.title("Medication Made Simple")
-st.caption("An AI-based Medication Understanding and Adherence Support System")
-
-with st.container():
-    st.markdown(
-        """
-        **Why this app exists**
-
-        Many patients miss doses not because they forget,
-        but because they don’t understand *why* timing matters.
-
-        This prototype focuses on:
-        - Plain-language prescription interpretation  
-        - Simple daily medication planning  
-        - Behavioral nudges instead of alarms  
-        - Basic safety awareness  
-
-        **Understanding comes first. Adherence follows.**
-        """
-    )
+# ------------------ HEADER ------------------
+st.title("💊 Medication Made Simple")
+st.caption("An Explainable AI–based Medication Understanding & Adherence Support System")
 
 st.divider()
 
-# ─────────────────────────────────────────────
-# INPUT SECTION
-# ─────────────────────────────────────────────
-with st.container():
-    st.subheader("📄 Enter Prescription")
+# ------------------ CONTEXT ------------------
+st.markdown(
+    """
+    ### 🧠 Why this app exists
+    Many patients miss doses **not because they forget**,  
+    but because they don’t understand *why timing and consistency matter*.
 
-    input_mode = st.radio(
-        "Choose input type",
-        ["Text", "Image"],
-        horizontal=True
+    This system focuses on:
+    - Translating prescriptions into **plain language**
+    - Creating a **simple daily routine**
+    - Using **behavioral nudges instead of alarms**
+    - Highlighting **basic safety awareness**
+
+    👉 **Understanding first. Adherence next.**
+    """
+)
+
+st.info(
+    "This tool supports patients and caregivers by improving understanding. "
+    "It does not replace professional medical advice."
+)
+
+st.divider()
+
+# ------------------ INPUT ------------------
+st.subheader("📄 Enter Prescription")
+
+prescription_text = st.text_area(
+    "Paste the prescription text below",
+    height=150,
+    value=(
+        "Paracetamol 500 mg – 1-0-1 – After food – 5 days\n"
+        "Amoxicillin 250 mg – 0-1-1 – After food – 7 days"
     )
+)
 
-    prescription_text = ""
-
-    if input_mode == "Text":
-        prescription_text = st.text_area(
-            "Paste the prescription text below",
-            height=150,
-            value=(
-                "Paracetamol 500 mg – 1-0-1 – After food – 5 days\n"
-                "Amoxicillin 250 mg – 0-1-1 – After food – 7 days"
-            )
-        )
-
-    else:
-        uploaded_image = st.file_uploader(
-            "Upload prescription image",
-            type=["png", "jpg", "jpeg"]
-        )
-
-        if uploaded_image:
-            image = Image.open(uploaded_image)
-            st.image(image, caption="Uploaded Prescription", use_column_width=True)
-
-            if OCR_AVAILABLE:
-                with st.spinner("Extracting text from image..."):
-                    extracted_text = pytesseract.image_to_string(image)
-            else:
-                extracted_text = ""
-
-            prescription_text = st.text_area(
-                "Extracted text (you can edit before proceeding)",
-                value=extracted_text,
-                height=150
-            )
-
-    generate = st.button("🔍 Generate Medication Plan")
-
-# ─────────────────────────────────────────────
-# OUTPUT SECTION
-# ─────────────────────────────────────────────
-if generate and prescription_text.strip():
+# ------------------ PROCESS ------------------
+if st.button("✨ Generate My Medication Plan"):
 
     medicines = parse_prescription(prescription_text)
 
-    with st.container():
-        st.subheader("🔍 Extracted Information")
-        st.json(medicines)
+    st.subheader("🔍 What the system understood")
+    st.json(medicines)
 
+    # -------- Schedule --------
     plan = generate_adherence_plan(medicines)
 
-    st.divider()
+    st.subheader("🗓️ Your Daily Medication Routine")
 
-    # Schedule + Explanation
-    col1, col2 = st.columns(2)
+    for time, meds in plan.items():
+        if meds:
+            st.markdown(f"**{time}**")
+            for m in meds:
+                st.write("•", m)
 
-    with col1:
-        st.subheader("🗓️ Daily Schedule")
-        for time, meds in plan.items():
-            if meds:
-                st.markdown(f"**{time}**")
-                for m in meds:
-                    st.write("•", m)
+    # -------- Explainability --------
+    st.subheader("🧠 How this plan was created (Explainable AI)")
 
-    with col2:
-        st.subheader("🧠 Why This Schedule Matters")
-        st.info(
-            "The schedule is created directly from the prescription pattern "
-            "(for example, 1-0-1 means morning and night doses). "
-            "Consistent timing helps medicines work effectively and safely."
-        )
+    st.write(
+        """
+        - The schedule follows the dosage pattern written in the prescription  
+        - For example, **1-0-1** means morning and night  
+        - Timing consistency supports routine and reduces missed doses  
+        - No medical decisions are made by the system
+        """
+    )
 
-    st.divider()
+    # -------- Nudges --------
+    st.subheader("💡 Why timing matters (Behavioral Nudges)")
 
-    # Behavioral nudges
-    with st.container():
-        st.subheader("💡 Supportive Nudges")
-        nudges = generate_nudges(medicines)
-        for n in nudges:
-            st.info(n)
+    nudges = generate_nudges(medicines)
+    for n in nudges:
+        st.info(n)
 
-    # Safety alerts
+    # -------- Safety Awareness --------
     warnings = check_basic_contraindications(plan)
     if warnings:
-        with st.container():
-            st.subheader("⚠️ Safety Awareness")
-            for w in warnings:
-                st.warning(w)
+        st.subheader("⚠️ Gentle Safety Awareness")
+        for w in warnings:
+            st.warning(w)
 
-    # Daily motivation (one per day)
-    with st.expander("🌱 A Gentle Nudge for Today"):
+    st.success(
+        "If a dose is missed, continue with the next scheduled time "
+        "as advised by your healthcare provider."
+    )
+
+    # -------- Daily Motivation --------
+    with st.expander("🌱 Your motivation for today"):
         st.success(get_daily_motivation())
 
+    # -------- Ethical AI Note --------
     st.divider()
-
     st.caption(
-        "Disclaimer: This prototype is for informational purposes only "
-        "and does not replace professional medical advice."
-    )
+        "Ethical AI Notice: This prototype focuses on explanation, routine, "
+        "and behavioral support. It intentionally avoids diagnosis, "
+        "dose changes, or outcome predictions."
+    )   
