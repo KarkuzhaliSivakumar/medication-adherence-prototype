@@ -9,6 +9,22 @@ from logic import (
 st.set_page_config(page_title="Medication Adherence Support", layout="centered")
 
 st.title("💊 Medication Understanding & Adherence Support System")
+st.markdown(
+    """
+    ### 🧠 Why this app exists
+    Many patients miss doses not because they forget,
+    but because they don’t understand *why* timing matters.
+    
+    This prototype focuses on:
+    - Translating prescriptions into plain language  
+    - Creating a simple daily plan  
+    - Using behavioral nudges instead of alarms  
+    - Highlighting basic safety concerns  
+    
+    The goal is **understanding first, adherence next**.
+    """
+)
+
 
 st.write(
     "This system converts complex prescriptions into a simple, "
