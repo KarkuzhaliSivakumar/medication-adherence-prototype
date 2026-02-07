@@ -1,4 +1,6 @@
 import streamlit as st
+from logic import get_daily_motivation
+
 from logic import (
     parse_prescription,
     generate_adherence_plan,
@@ -76,6 +78,11 @@ if st.button("Generate Adherence Plan"):
         st.subheader("⚠️ Safety Alerts")
         for w in warnings:
             st.warning(w)
+
+    with st.expander("🌱 A Gentle Nudge for Today"):
+         st.toast(get_daily_motivation(), icon="💚")
+
+
 
     st.caption(
         "Disclaimer: This tool is for informational purposes only "
